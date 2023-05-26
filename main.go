@@ -102,20 +102,16 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-var daemonCmd = &cobra.Command{
-	Use:   "daemon",
-	Short: "Start the password checker as a web server",
-	Run: func(cmd *cobra.Command, args []string) {
-		startServer()
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(daemonCmd)
-}
-
 func main() {
+	var daemonMode bool
+
+	rootCmd.PersistentFlags().BoolVarP(&daemonMode, "daemon", "d", false, "Start the password checker as a web server")
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
+	}
+
+	if daemonMode {
+		startServer()
 	}
 }
