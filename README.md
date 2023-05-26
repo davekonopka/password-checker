@@ -1,3 +1,6 @@
+Read the accompanying blog post about this project:
+[Would you hire ChatGPT?](https://www.davekonopka.com/2023/05/would-you-hire-chatgpt/)
+
 # Password Strength Checker
 
 The Password Strength Checker is a command-line and HTTP-based service written in Go that checks the strength of a password based on certain rules. It is built to be production-ready with operational features including health checks, metrics, Docker support, and load testing configuration.
