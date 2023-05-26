@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"unicode"
@@ -81,11 +83,27 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, strconv.Itoa(steps))
 }
 
-func startServer() {
+func startServer(stop chan bool) {
 	r := mux.NewRouter()
 	r.HandleFunc("/check/{password}", handler)
 	http.Handle("/", r)
-	http.ListenAndServe(":8080", nil)
+
+	srv := &http.Server{Addr: ":8080"}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+			// unexpected error. port in use?
+			log.Fatalf("ListenAndServe(): %v", err)
+		}
+	}()
+
+	// returning in a non-blocking way
+	go func() {
+		<-stop
+		if err := srv.Shutdown(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
 }
 
 var rootCmd = &cobra.Command{
@@ -115,6 +133,10 @@ func main() {
 	}
 
 	if daemonMode {
-		startServer()
+		stop := make(chan bool)
+		go startServer(stop)
+
+		// Block main() until it's told to stop.
+		<-stop
 	}
 }

@@ -17,13 +17,15 @@ func TestCli(t *testing.T) {
 	}
 
 	expectedOutput := "0\n" // The password "password" is already strong
-	if strings.Compare(string(output), expectedOutput) != 0 {
-		t.Fatalf("Expected %v, got %v", expectedOutput, output)
+	if strings.TrimSpace(string(output)) != expectedOutput {
+		t.Fatalf("Expected %v, got %v", expectedOutput, string(output))
 	}
 }
 
 func TestDaemon(t *testing.T) {
-	go main()
+	go func() {
+		main()
+	}()
 
 	// Give the server a moment to start
 	time.Sleep(1 * time.Second)
@@ -39,9 +41,9 @@ func TestDaemon(t *testing.T) {
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	expectedBody := "0\n"
-	if strings.Compare(string(body), expectedBody) != 0 {
-		t.Fatalf("Expected %v, got %v", expectedBody, body)
+	expectedBody := "0"
+	if strings.TrimSpace(string(body)) != expectedBody {
+		t.Fatalf("Expected %v, got %v", expectedBody, string(body))
 	}
 }
 
