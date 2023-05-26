@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"unicode"
 
+	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 )
 
@@ -84,9 +87,21 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+func handler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	password := vars["password"]
+	steps := CheckPasswordStrength(password)
+	fmt.Fprint(w, strconv.Itoa(steps))
+}
+
 func main() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
+	} else {
+		r := mux.NewRouter()
+		r.HandleFunc("/check/{password}", handler)
+		http.Handle("/", r)
+		http.ListenAndServe(":8080", nil)
 	}
 }
