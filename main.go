@@ -7,8 +7,22 @@ import (
 	"unicode"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 )
+
+var (
+	requestCount = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "request_count",
+		Help: "Number of password check requests.",
+	})
+)
+
+func init() {
+	// Metrics have to be registered to be exposed:
+	prometheus.MustRegister(requestCount)
+}
 
 func CheckPasswordStrength(password string) int {
 	steps := 0
@@ -79,6 +93,8 @@ func passwordHandler(w http.ResponseWriter, r *http.Request) {
 	password := vars["password"]
 	steps := CheckPasswordStrength(password)
 	fmt.Fprint(w, strconv.Itoa(steps))
+
+	requestCount.Inc()
 }
 
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
@@ -90,6 +106,8 @@ func startServer() {
 	r := mux.NewRouter()
 	r.HandleFunc("/check/{password}", passwordHandler)
 	r.HandleFunc("/healthcheck", healthCheckHandler)
+	r.Handle("/metrics", promhttp.Handler())
+
 	http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)
 }
