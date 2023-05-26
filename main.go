@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
-	"strings"
 	"unicode"
 
 	"github.com/gorilla/mux"
@@ -76,17 +74,6 @@ func CheckPasswordStrength(password string) int {
 	return steps
 }
 
-var rootCmd = &cobra.Command{
-	Use:   "password_checker",
-	Short: "Password strength checker",
-	Long:  `This application checks the strength of a password.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		password := strings.Join(args, " ")
-		steps := CheckPasswordStrength(password)
-		fmt.Printf("Steps required to make the password strong: %d\n", steps)
-	},
-}
-
 func handler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	password := vars["password"]
@@ -94,14 +81,41 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, strconv.Itoa(steps))
 }
 
+func startServer() {
+	r := mux.NewRouter()
+	r.HandleFunc("/check/{password}", handler)
+	http.Handle("/", r)
+	http.ListenAndServe(":8080", nil)
+}
+
+var rootCmd = &cobra.Command{
+	Use:   "password-checker",
+	Short: "Password checker is a Go application to check password strength",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 1 {
+			fmt.Println("Invalid number of arguments")
+			return
+		}
+		password := args[0]
+		steps := CheckPasswordStrength(password)
+		fmt.Println(steps)
+	},
+}
+
+var daemonCmd = &cobra.Command{
+	Use:   "daemon",
+	Short: "Start the password checker as a web server",
+	Run: func(cmd *cobra.Command, args []string) {
+		startServer()
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(daemonCmd)
+}
+
 func main() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
-	} else {
-		r := mux.NewRouter()
-		r.HandleFunc("/check/{password}", handler)
-		http.Handle("/", r)
-		http.ListenAndServe(":8080", nil)
 	}
 }
