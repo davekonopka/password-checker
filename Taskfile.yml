@@ -1,0 +1,39 @@
+version: '3'
+
+tasks:
+  build:
+    desc: Build the project
+    cmds:
+      - go build -o password-checker .
+
+  test:
+    desc: Test the project
+    cmds:
+      - go test -v ./...
+
+  docker:
+    desc: Build Docker image
+    cmds:
+      - docker build -t password-checker .
+
+  run:
+    desc: Run the project
+    cmds:
+      - go run .
+
+  docker-compose:
+    desc: Start services with docker-compose
+    cmds:
+      - docker-compose up -d
+
+  down:
+    desc: Stop services with docker-compose
+    cmds:
+      - docker-compose down
+
+  all:
+    desc: Build, test, and run the project
+    cmds:
+      - task: build
+      - task: test
+      - task: run
