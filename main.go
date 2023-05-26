@@ -92,6 +92,9 @@ var rootCmd = &cobra.Command{
 	Use:   "password-checker",
 	Short: "Password checker is a Go application to check password strength",
 	Run: func(cmd *cobra.Command, args []string) {
+		if daemonMode {
+			return
+		}
 		if len(args) != 1 {
 			fmt.Println("Invalid number of arguments")
 			return
@@ -102,9 +105,9 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func main() {
-	var daemonMode bool
+var daemonMode bool
 
+func main() {
 	rootCmd.PersistentFlags().BoolVarP(&daemonMode, "daemon", "d", false, "Start the password checker as a web server")
 
 	if err := rootCmd.Execute(); err != nil {
