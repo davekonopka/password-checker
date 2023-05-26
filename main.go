@@ -1,7 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"strings"
 	"unicode"
+
+	"github.com/spf13/cobra"
 )
 
 func CheckPasswordStrength(password string) int {
@@ -49,4 +54,22 @@ func CheckPasswordStrength(password string) int {
 	}
 
 	return steps
+}
+
+var rootCmd = &cobra.Command{
+	Use:   "password_checker",
+	Short: "Password strength checker",
+	Long:  `This application checks the strength of a password.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		password := strings.Join(args, " ")
+		steps := CheckPasswordStrength(password)
+		fmt.Printf("Steps required to make the password strong: %d\n", steps)
+	},
+}
+
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
