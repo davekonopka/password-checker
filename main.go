@@ -9,8 +9,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+var log = logrus.New()
 
 var (
 	requestCount = prometheus.NewCounter(prometheus.CounterOpts{
@@ -22,6 +26,15 @@ var (
 func init() {
 	// Metrics have to be registered to be exposed:
 	prometheus.MustRegister(requestCount)
+
+	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().StringP("loglevel", "l", "info", "Set the logging level (options: debug, info, warn, error, fatal, panic")
+	viper.BindPFlag("loglevel", rootCmd.PersistentFlags().Lookup("loglevel"))
+}
+
+func initConfig() {
+	logLevel, _ := logrus.ParseLevel(viper.GetString("loglevel"))
+	log.SetLevel(logLevel)
 }
 
 func CheckPasswordStrength(password string) int {
@@ -89,6 +102,7 @@ func CheckPasswordStrength(password string) int {
 }
 
 func passwordHandler(w http.ResponseWriter, r *http.Request) {
+	log.Debug("Received a request for password strength check")
 	vars := mux.Vars(r)
 	password := vars["password"]
 	steps := CheckPasswordStrength(password)
