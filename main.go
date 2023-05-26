@@ -42,15 +42,32 @@ func CheckPasswordStrength(password string) int {
 		}
 	}
 
-	// Check if all character types are present
-	if !lowercase {
-		steps++
-	}
-	if !uppercase {
-		steps++
-	}
-	if !digit {
-		steps++
+	// Adjust for cases when length is less than 6
+	if len(runes) < 6 {
+		missing := 0
+		if !lowercase {
+			missing++
+		}
+		if !uppercase {
+			missing++
+		}
+		if !digit {
+			missing++
+		}
+		if missing > steps {
+			steps = missing
+		}
+	} else {
+		// Check if all character types are present
+		if !lowercase {
+			steps++
+		}
+		if !uppercase {
+			steps++
+		}
+		if !digit {
+			steps++
+		}
 	}
 
 	return steps
